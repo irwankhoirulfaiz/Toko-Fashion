@@ -1,5 +1,3 @@
--- Jalankan ini di Supabase Dashboard -> SQL Editor -> New query -> Run
-
 create extension if not exists "uuid-ossp";
 
 create table if not exists products (
@@ -27,11 +25,6 @@ create table if not exists orders (
   created_at timestamptz default now()
 );
 
--- Row Level Security: produk boleh dibaca publik, tapi cuma bisa
--- ditulis/diubah lewat request yang login (dipakai admin panel).
--- Order cuma bisa dibaca/ditulis dari server (service role key),
--- BUKAN dari browser client — makanya operasi order selalu lewat
--- API route (/api/checkout, /api/midtrans-webhook), bukan supabase.ts biasa.
 
 alter table products enable row level security;
 alter table orders enable row level security;
@@ -44,6 +37,3 @@ create policy "Produk cuma bisa diubah user yang login"
   on products for all
   using (auth.role() = 'authenticated')
   with check (auth.role() = 'authenticated');
-
--- Tidak ada policy select/insert untuk 'orders' secara sengaja —
--- semua akses order HARUS lewat service role key di server (lihat lib/supabase.ts).
